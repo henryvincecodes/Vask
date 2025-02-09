@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine's Quest 💖</title>
+    <style>
+        body {
+            background: pink;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: white;
+            text-shadow: 2px 2px 4px hotpink;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            box-shadow: 0 0 10px hotpink;
+        }
+        button {
+            background: hotpink;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            margin: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: deeppink;
+        }
+        .hidden {
+            display: none;
+        }
+        .confetti {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>💖 Hey Queen, It's Henry! 💖</h1>
+    <div class="container">
+        <p>Do you have plans for Valentine's Day?</p>
+        <button onclick="stepTwo(true)">Yes</button>
+        <button onclick="askValentine()">No</button>
+    </div>
+
+    <div class="container hidden" id="step2">
+        <p>Will you be free at night?</p>
+        <button onclick="askValentine()">Yes</button>
+        <button onclick="cancelPlans()">No</button>
+    </div>
+
+    <div class="container hidden" id="cancelPlans">
+        <p>Cancel those plans. Now, will you be my Valentine? 💘</p>
+        <button id="yesButtonCancel" onclick="celebrate()">Yes 💖</button>
+        <button id="noButtonCancel" onclick="handleNo('cancelPlans')">No 😢</button>
+    </div>
+
+    <div class="container hidden" id="askValentine">
+        <p>Will you be my Valentine? 💘</p>
+        <button id="yesButtonValentine" onclick="celebrate()">Yes 💖</button>
+        <button id="noButtonValentine" onclick="handleNo('askValentine')">No 😢</button>
+    </div>
+
+    <div class="container hidden" id="finalYes">
+        <h2>🎉 YAY! Can't wait for our date! 💕</h2>
+    </div>
+
+    <div class="container hidden" id="finalYesPlayful">
+        <h2>Ehen! Now you come! Why you come dey do shakara since? 😏</h2>
+    </div>
+
+    <canvas class="confetti" id="confetti"></canvas>
+
+    <script>
+        let noCount = 0; // Track the number of times "No" is clicked
+
+        function stepTwo(hasPlans) {
+            document.querySelector(".container").classList.add("hidden");
+            if (hasPlans) {
+                document.getElementById("step2").classList.remove("hidden");
+            } else {
+                askValentine();
+            }
+        }
+
+        function cancelPlans() {
+            document.getElementById("step2").classList.add("hidden");
+            document.getElementById("cancelPlans").classList.remove("hidden");
+        }
+
+        function askValentine() {
+            document.querySelector(".container").classList.add("hidden");
+            document.getElementById("askValentine").classList.remove("hidden");
+        }
+
+        function handleNo(containerId) {
+            noCount++;
+            const yesButton = document.getElementById(`yesButton${containerId === 'askValentine' ? 'Valentine' : 'Cancel'}`);
+            const noButton = document.getElementById(`noButton${containerId === 'askValentine' ? 'Valentine' : 'Cancel'}`);
+
+            // Increase the size of the "Yes" button
+            const currentYesSize = parseFloat(window.getComputedStyle(yesButton).fontSize);
+            yesButton.style.fontSize = `${currentYesSize + 10}px`;
+
+            // Decrease the size of the "No" button
+            const currentNoSize = parseFloat(window.getComputedStyle(noButton).fontSize);
+            noButton.style.fontSize = `${Math.max(currentNoSize - 5, 10)}px`;
+
+            // Swap positions of the buttons
+            const parent = noButton.parentElement;
+            parent.insertBefore(yesButton, noButton);
+        }
+
+        function celebrate() {
+            document.getElementById("askValentine").classList.add("hidden");
+            document.getElementById("cancelPlans").classList.add("hidden");
+
+            if (noCount >= 4) {
+                document.getElementById("finalYesPlayful").classList.remove("hidden");
+            } else {
+                document.getElementById("finalYes").classList.remove("hidden");
+            }
+
+            startConfetti();
+        }
+
+        function startConfetti() {
+            const canvas = document.getElementById("confetti");
+            const ctx = canvas.getContext("2d");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const particles = [];
+            
+            class Particle {
+                constructor(x, y, dx, dy, radius, color) {
+                    this.x = x;
+                    this.y = y;
+                    this.dx = dx;
+                    this.dy = dy;
+                    this.radius = radius;
+                    this.color = color;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    ctx.closePath();
+                }
+                update() {
+                    this.y += this.dy;
+                    if (this.y > canvas.height) this.y = 0;
+                    this.draw();
+                }
+            }
+
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const dx = (Math.random() - 0.5) * 2;
+                const dy = Math.random() * 3 + 1;
+                const radius = Math.random() * 5 + 2;
+                const color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                particles.push(new Particle(x, y, dx, dy, radius, color));
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => p.update());
+            }
+
+            document.getElementById("confetti").style.display = "block";
+            animate();
+        }
+    </script>
+
+</body>
+</html>
